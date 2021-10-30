@@ -7,8 +7,10 @@
 
 int main(int argc, char *argv[]) {
   spdlog::cfg::load_env_levels();
-  spdlog::set_pattern(R"JSON({"name":"%n","thread_id":%t,"process_id":%P,"level":"%l","message":"%v","timestamp":%E%e,"filename":"%s","line":%#,"function":"%!"})JSON");
-  spdlog::stdout_color_mt("console");
+  spdlog::set_pattern(R"JSON({"name":"%n","thread_id":%t,"process_id":%P,"level":"%l","message":"%v","timestamp":%E%F,"filename":"%s","line":%#,"function":"%!"})JSON");
+  spdlog::stdout_color_mt("app");
+  spdlog::stdout_color_mt("config");
+  spdlog::stdout_color_mt("database");
 
   std::string config_file = "config.json";
   if (argc >= 2) {
@@ -16,7 +18,7 @@ int main(int argc, char *argv[]) {
   }
 
   drogon::app().loadConfigFile(config_file);
-  SPDLOG_LOGGER_INFO(spdlog::get("console"), "successfully loaded config file: '{}'", config_file);
+  SPDLOG_LOGGER_INFO(spdlog::get("app"), "successfully loaded config file: '{}'", config_file);
 
   drogon::app().registerBeginningAdvice(Logging::on_application_start);
   drogon::app().registerPreRoutingAdvice(Logging::on_request);

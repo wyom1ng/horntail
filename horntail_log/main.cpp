@@ -12,8 +12,7 @@ bool is_valid_logentry(const nlohmann::json &log) {
 }
 
 std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds> get_time(const nlohmann::json &log) {
-  auto ms = std::chrono::milliseconds(log["timestamp"].get<uint64_t>());
-  auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(ms);
+  auto nanoseconds = std::chrono::nanoseconds(log["timestamp"].get<uint64_t>());
   return std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds>(nanoseconds);
 }
 
