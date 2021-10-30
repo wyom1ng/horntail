@@ -10,9 +10,9 @@ class Database : public drogon::Plugin<Database> {
   void shutdown() override;
 
  private:
-  static void deletion_routine(uint64_t interval_seconds);
+  static void deletion_routine(const std::stop_token& stoken, std::chrono::seconds interval);
 
-  std::thread deletion_thread;
+  std::jthread deletion_thread;
 };
 
 #endif
