@@ -13,7 +13,7 @@ class Link : public drogon::HttpController<Link> {
  public:
   METHOD_LIST_BEGIN
 
-  ADD_METHOD_TO(Link::create, "/", drogon::Post);
+  ADD_METHOD_TO(Link::create, "/api/v1/create", drogon::Post);
   ADD_METHOD_TO(Link::visit, "/{id}", drogon::Get);
 
   METHOD_LIST_END

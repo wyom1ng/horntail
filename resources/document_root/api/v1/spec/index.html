@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <title>Horntail OpenAPI</title>
+    <link rel="stylesheet" type="text/css" href="/api/v1/spec/styles.css">
+    <link rel="icon" type="image/png" href="/api/v1/spec/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/api/v1/spec/favicon-16x16.png" sizes="16x16">
+    <style>
+        html {
+            box-sizing: border-box;
+            overflow: -moz-scrollbars-vertical;
+            overflow-y: auto;
+        }
+
+        *,
+        *:before,
+        *:after {
+            box-sizing: inherit;
+        }
+
+        body {
+            margin: 0;
+            background: #181818;
+        }
+    </style>
+</head>
+
+<body>
+<div id="swagger-ui"></div>
+
+<script src="/api/v1/spec/spec-ui-bundle.js" charset="UTF-8"></script>
+<script src="/api/v1/spec/spec-ui-standalone-preset.js" charset="UTF-8"></script>
+<script>
+    window.onload = function () {
+        window.ui = SwaggerUIBundle({
+            "dom_id": "#swagger-ui",
+            deepLinking: true,
+            presets: [
+                SwaggerUIBundle.presets.apis,
+                SwaggerUIStandalonePreset
+            ],
+            plugins: [
+                SwaggerUIBundle.plugins.DownloadUrl
+            ],
+            layout: "StandaloneLayout",
+            validatorUrl: "https://validator.swagger.io/validator",
+            url: "/api/v1/spec.json",
+        })
+    }
+</script>
+
+
+</body>
+</html>

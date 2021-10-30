@@ -1,0 +1,223 @@
+openapi: 3.0.1
+info:
+  title: horntail
+  description: https://github.com/wyom1ng/horntail
+  contact:
+    email: webmaster@wyoming.dev
+  version: 1.0.0
+paths:
+  /{id}:
+    get:
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 255
+          required: true
+      responses:
+        302:
+          description: The long URL
+          content:
+            text/html: {}
+        404:
+          $ref: "#/components/responses/NotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+      summary: Either redirects to the stored URL (if one exists), or redirects to a predefined 404 page (if one exists) or returns a 404
+      tags:
+        - public
+  /api/v1/link:
+    post:
+      parameters:
+        - in: body
+          name: id
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 255
+          required: true
+      responses:
+        200:
+          description: The long URL
+          content:
+            text/html: {}
+        404:
+          $ref: "#/components/responses/NotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+      summary: Either redirects to the stored URL (if one exists), or redirects to a predefined 404 page (if one exists) or returns a 404
+      tags:
+        - link
+  /api/v1/link/{id}:
+    get:
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 255
+          required: true
+      responses:
+        200:
+          description: The long URL
+          content:
+            text/html: {}
+        404:
+          $ref: "#/components/responses/NotFound"
+        409:
+          $ref: "#/components/responses/Conflict"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+      summary: Either redirects to the stored URL (if one exists), or redirects to a predefined 404 page (if one exists) or returns a 404
+      tags:
+        - link
+    put:
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 255
+          required: true
+      responses:
+        200:
+          description: The long URL
+          content:
+            text/html: {}
+        404:
+          $ref: "#/components/responses/NotFound"
+        409:
+          $ref: "#/components/responses/Conflict"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+      summary: Either redirects to the stored URL (if one exists), or redirects to a predefined 404 page (if one exists) or returns a 404
+      tags:
+        - link
+    patch:
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 255
+          required: true
+      responses:
+        200:
+          description: The long URL
+          content:
+            text/html: {}
+        404:
+          $ref: "#/components/responses/NotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+      summary: Either redirects to the stored URL (if one exists), or redirects to a predefined 404 page (if one exists) or returns a 404
+      tags:
+        - link
+    delete:
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 255
+          required: true
+      responses:
+        200:
+          description: The long URL
+          content:
+            text/html: {}
+        404:
+          $ref: "#/components/responses/NotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+      summary: Either redirects to the stored URL (if one exists), or redirects to a predefined 404 page (if one exists) or returns a 404
+      tags:
+        - link
+  /api/v1/spec:
+    get:
+      responses:
+        200:
+          description: This page
+          content:
+            text/html: { }
+        500:
+          $ref: "#/components/responses/InternalServerError"
+      summary: Serve this page
+      tags:
+        - meta
+  /api/v1/spec/{file_name}:
+    get:
+      parameters:
+        - in: path
+          name: file_name
+          schema:
+            type: string
+            pattern: '^(?!\w*\.\.)([^/]+)$'
+          required: true
+      responses:
+        200:
+          description: The requested resource
+          content:
+            "*/*":
+              schema:
+                type: string
+                format: binary
+        404:
+          $ref: "#/components/responses/NotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+      summary: OpenAPI related resources
+      tags:
+        - meta
+servers:
+  - url: http://localhost:9000/
+components:
+  responses:
+    OK:
+      description: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/200
+      content: { }
+    Created:
+      description: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/201
+      content: { }
+    NoContent:
+      description: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/204
+      content: { }
+    BadRequest:
+      description: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400
+      content: { }
+    Unauthorized:
+      description: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+      content: { }
+    Forbidden:
+      description: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+      content: { }
+    NotFound:
+      description: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+      content: { }
+    Conflict:
+      description: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/409
+      content: {}
+    InternalServerError:
+      description: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+      content: { }
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: LoginToken
+    basicAuth:
+      type: http
+      scheme: basic
+tags:
+  - name: public
+    description: the public API
+  - name: link
+    description: Link CRUD
+  - name: meta
+    description: Everything about the specification itself
