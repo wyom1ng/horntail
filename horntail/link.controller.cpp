@@ -6,7 +6,7 @@
 
 namespace controllers {
 
-void Link::create(const drogon::HttpRequestPtr &req, std::function<void(const drogon::HttpResponsePtr &)> &&callback) {
+void Link::generate(const drogon::HttpRequestPtr &req, std::function<void(const drogon::HttpResponsePtr &)> &&callback) {
     if (!req->getJsonObject()) {
       Json::Value response_json;
       response_json["message"] = "invalid json";
@@ -52,7 +52,7 @@ void Link::create(const drogon::HttpRequestPtr &req, std::function<void(const dr
     if (lifetime_seconds) {
       db->execSqlAsync(
           "INSERT INTO `links` (`id`, `link`, `delete_after`)"
-          "VALUES (?, ?, TIMESTAMPADD(SECOND, ?, CURRENT_TIMESTAMP);",
+          "VALUES (?, ?, TIMESTAMPADD(SECOND, ?, UTC_TIMESTAMP);",
           std::move(link_created_success_cb),
           std::move(link_created_error_cb),
           id, url, lifetime_seconds);
@@ -106,6 +106,30 @@ void Link::visit(const drogon::HttpRequestPtr &, std::function<void(const drogon
       std::move(link_query_success_cb),
       std::move(link_query_error_cb),
       id);
+}
+
+void Link::create(const drogon::HttpRequestPtr &req, std::function<void(const drogon::HttpResponsePtr &)> &&callback) {
+  auto response = drogon::HttpResponse::newHttpResponse();
+  response->setStatusCode(drogon::k501NotImplemented);
+  callback(response);
+}
+
+void Link::get(const drogon::HttpRequestPtr &req, std::function<void(const drogon::HttpResponsePtr &)> &&callback) {
+  auto response = drogon::HttpResponse::newHttpResponse();
+  response->setStatusCode(drogon::k501NotImplemented);
+  callback(response);
+}
+
+void Link::update(const drogon::HttpRequestPtr &req, std::function<void(const drogon::HttpResponsePtr &)> &&callback) {
+  auto response = drogon::HttpResponse::newHttpResponse();
+  response->setStatusCode(drogon::k501NotImplemented);
+  callback(response);
+}
+
+void Link::remove(const drogon::HttpRequestPtr &req, std::function<void(const drogon::HttpResponsePtr &)> &&callback) {
+  auto response = drogon::HttpResponse::newHttpResponse();
+  response->setStatusCode(drogon::k501NotImplemented);
+  callback(response);
 }
 
 };  // namespace controllers

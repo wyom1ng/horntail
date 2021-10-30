@@ -12,7 +12,7 @@ add_executable(${PROJECT_NAME}
         horntail/config.plugin.cpp
         horntail/config.plugin.h
         horntail/database.plugin.cpp
-        horntail/database.plugin.h)
+        horntail/database.plugin.h horntail/credential.filter.cpp horntail/credential.filter.h horntail/base64.h)
 add_executable(horntail_log horntail_log/main.cpp)
 
 ### drogon ###

@@ -8,6 +8,7 @@ info:
 paths:
   /{id}:
     get:
+      operationId: visitLink
       parameters:
         - in: path
           name: id
@@ -30,95 +31,85 @@ paths:
         - public
   /api/v1/link:
     post:
-      parameters:
-        - in: body
-          name: id
-          schema:
-            type: string
-            minLength: 3
-            maxLength: 255
-          required: true
+      operationId: generateLink
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateLinkRequestSchema"
       responses:
         200:
-          description: The long URL
-          content:
-            text/html: {}
+          $ref: "#/components/responses/GenerateLinkResponse"
         404:
           $ref: "#/components/responses/NotFound"
         500:
           $ref: "#/components/responses/InternalServerError"
+      security:
+        - bearerAuth: [ ]
+        - basicAuth: [ ]
       summary: Either redirects to the stored URL (if one exists), or redirects to a predefined 404 page (if one exists) or returns a 404
       tags:
         - link
   /api/v1/link/{id}:
     get:
+      operationId: getLink
       parameters:
         - in: path
           name: id
           schema:
-            type: string
-            minLength: 3
-            maxLength: 255
+            $ref: "#/components/schemas/Id"
           required: true
       responses:
         200:
-          description: The long URL
-          content:
-            text/html: {}
+          $ref: "#/components/responses/GetLinkResponse"
         404:
           $ref: "#/components/responses/NotFound"
         409:
           $ref: "#/components/responses/Conflict"
         500:
           $ref: "#/components/responses/InternalServerError"
+      security:
+        - bearerAuth: [ ]
+        - basicAuth: [ ]
       summary: Either redirects to the stored URL (if one exists), or redirects to a predefined 404 page (if one exists) or returns a 404
       tags:
         - link
     put:
+      operationId: createLink
       parameters:
         - in: path
           name: id
           schema:
-            type: string
-            minLength: 3
-            maxLength: 255
+            $ref: "#/components/schemas/Id"
           required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PutLinkRequestSchema"
       responses:
         200:
-          description: The long URL
-          content:
-            text/html: {}
+          $ref: "#/components/responses/PutLinkResponse"
+        201:
+          $ref: "#/components/responses/Created"
+        400:
+          $ref: "#/components/responses/BadRequest"
         404:
           $ref: "#/components/responses/NotFound"
         409:
           $ref: "#/components/responses/Conflict"
         500:
           $ref: "#/components/responses/InternalServerError"
-      summary: Either redirects to the stored URL (if one exists), or redirects to a predefined 404 page (if one exists) or returns a 404
-      tags:
-        - link
-    patch:
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: string
-            minLength: 3
-            maxLength: 255
-          required: true
-      responses:
-        200:
-          description: The long URL
-          content:
-            text/html: {}
-        404:
-          $ref: "#/components/responses/NotFound"
-        500:
-          $ref: "#/components/responses/InternalServerError"
-      summary: Either redirects to the stored URL (if one exists), or redirects to a predefined 404 page (if one exists) or returns a 404
+      security:
+        - bearerAuth: [ ]
+        - basicAuth: [ ]
+      summary: Create a short link by specifying the id and target.
       tags:
         - link
     delete:
+      operationId: removeLink
       parameters:
         - in: path
           name: id
@@ -128,19 +119,19 @@ paths:
             maxLength: 255
           required: true
       responses:
-        200:
-          description: The long URL
-          content:
-            text/html: {}
-        404:
-          $ref: "#/components/responses/NotFound"
+        204:
+          $ref: "#/components/responses/NoContent"
         500:
           $ref: "#/components/responses/InternalServerError"
-      summary: Either redirects to the stored URL (if one exists), or redirects to a predefined 404 page (if one exists) or returns a 404
+      security:
+        - bearerAuth: [ ]
+        - basicAuth: [ ]
+      summary: Delete a short link
       tags:
         - link
   /api/v1/spec:
     get:
+      operationId: viewSpec
       responses:
         200:
           description: This page
@@ -153,6 +144,7 @@ paths:
         - meta
   /api/v1/spec/{file_name}:
     get:
+      operationId: getSpecResource
       parameters:
         - in: path
           name: file_name
@@ -179,6 +171,21 @@ servers:
   - url: http://localhost:9000/
 components:
   responses:
+    GenerateLinkResponse:
+      content:
+        "application/json":
+          schema:
+            $ref: "#/components/schemas/GenerateLinkResponseSchema"
+    GetLinkResponse:
+      content:
+        "application/json":
+          schema:
+            $ref: "#/components/schemas/GetLinkResponseSchema"
+    PutLinkResponse:
+      content:
+        "application/json":
+          schema:
+            $ref: "#/components/schemas/PutLinkResponseSchema"
     OK:
       description: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/200
       content: { }
@@ -206,6 +213,80 @@ components:
     InternalServerError:
       description: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
       content: { }
+  schemas:
+    LifetimeSeconds:
+      type: integer
+      description: How long until a link is deleted. Explicitly setting this to 0 disables deletion.
+      min: 0
+    Id:
+      type: string
+      maxLength: 255
+    Url:
+      type: string
+      pattern: https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)
+      format: url
+    Timestamp:
+      type: string
+      format: '%Y-%m-%dT%TZ'
+    GenerateLinkRequestSchema:
+      type: object
+      properties:
+        target:
+          $ref: "#/components/schemas/Url"
+        lifetime_seconds:
+          $ref: "#/components/schemas/LifetimeSeconds"
+      required:
+        - url
+    PutLinkRequestSchema:
+      type: object
+      properties:
+        target:
+          $ref: "#/components/schemas/Url"
+        lifetime_seconds:
+          $ref: "#/components/schemas/LifetimeSeconds"
+      required:
+        - url
+    GenerateLinkResponseSchema:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+        short_url:
+          $ref: "#/components/schemas/Url"
+        available_until:
+          $ref: "#/components/schemas/Timestamp"
+      required:
+        - id
+        - short_url
+    GetLinkResponseSchema:
+      type: object
+      properties:
+        short_url:
+          $ref: "#/components/schemas/Url"
+        target:
+          $ref: "#/components/schemas/Url"
+        created_at:
+          $ref: "#/components/schemas/Timestamp"
+        available_until:
+          $ref: "#/components/schemas/Timestamp"
+      required:
+        - short_url
+        - created_at
+    PutLinkResponseSchema:
+      type: object
+      properties:
+        short_url:
+          $ref: "#/components/schemas/Url"
+        target:
+          $ref: "#/components/schemas/Url"
+        created_at:
+          $ref: "#/components/schemas/Timestamp"
+        available_until:
+          $ref: "#/components/schemas/Timestamp"
+      required:
+        - short_url
+        - target
+        - created_at
   securitySchemes:
     bearerAuth:
       type: http

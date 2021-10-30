@@ -15,7 +15,7 @@ void Database::initAndStart(const Json::Value &database_config) {
         "CREATE TABLE IF NOT EXISTS `links` ("
         "`id` VARCHAR(256) NOT NULL,"
         "`link` TEXT NOT NULL,"
-        "`created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+        "`created_at` TIMESTAMP DEFAULT UTC_TIMESTAMP,"
         "`delete_after` TIMESTAMP,"
         "PRIMARY KEY (`id`)"
         ");");
@@ -39,7 +39,7 @@ void Database::deletion_routine(const std::stop_token &stop_token, std::chrono::
     SPDLOG_LOGGER_TRACE(spdlog::get("database"), "running deletion routine");
     drogon::app().getDbClient()->execSqlSync(
         "DELETE FROM `links` "
-        "WHERE `delete_after` IS NOT NULL AND `delete_after` < CURRENT_TIMESTAMP;");
+        "WHERE `delete_after` IS NOT NULL AND `delete_after` < UTC_TIMESTAMP;");
     SPDLOG_LOGGER_TRACE(spdlog::get("database"), "deletion routine completed");
     std::this_thread::sleep_for(interval);
   }
