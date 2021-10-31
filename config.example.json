@@ -1,0 +1,74 @@
+{
+  "listeners": [
+    {
+      "address": "0.0.0.0",
+      "port": 9000,
+      "https": false
+    }
+  ],
+  "app": {
+    "number_of_threads": 0,
+    "upload_path": "/tmp/uploads",
+    "document_root": "./resources/document_root",
+    "use_sendfile": true,
+    "use_implicit_page": true,
+    "implicit_page": "index.html",
+    "file_types": [
+      "html",
+      "js",
+      "css",
+      "png",
+      "json"
+    ],
+    "mime": {
+      "application/json": "json"
+    },
+    "locations": [
+      {
+        "uri_prefix": "/api/v1",
+        "default_content_type": "text/plain",
+        "is_case_sensitive": false,
+        "allow_all": true,
+        "is_recursive": true,
+        "filters": []
+      }
+    ]
+  },
+  "db_clients": [
+    {
+      "name": "default",
+      "rdbms": "mysql",
+      "host": "127.0.0.1",
+      "port": 3306,
+      "dbname": "horntail",
+      "user": "horntail",
+      "passwd": "horntail",
+      "is_fast": false,
+      "connection_number": 1,
+      "timeout": 5
+    }
+  ],
+  "plugins": [
+    {
+      "name": "Config"
+    },
+    {
+      "name": "Database",
+      "config": {
+        "deletion_interval_seconds": 300
+      },
+      "dependencies": ["Config"]
+    }
+  ],
+  "custom_config": {
+    "base_url": "https://wyoming.みんな/",
+    "not_found_redirect_url": "",
+    "default_link_lifetime_seconds": 432000,
+    "link_id_length": 10,
+    "link_alphabet": "_-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "credentials": [
+      "Basic YWRtaW46cGFzc3dvcmQ=",
+      "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ3aHkgZGlkIHlvdSBkZWNvZGUgdGhpcz8ifQ"
+    ]
+  }
+}

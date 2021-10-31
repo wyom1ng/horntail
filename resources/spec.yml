@@ -48,7 +48,7 @@ paths:
       security:
         - bearerAuth: [ ]
         - basicAuth: [ ]
-      summary: Either redirects to the stored URL (if one exists), or redirects to a predefined 404 page (if one exists) or returns a 404
+      summary: Generates a short link for a given target URL
       tags:
         - link
   /api/v1/link/{id}:
@@ -72,7 +72,7 @@ paths:
       security:
         - bearerAuth: [ ]
         - basicAuth: [ ]
-      summary: Either redirects to the stored URL (if one exists), or redirects to a predefined 404 page (if one exists) or returns a 404
+      summary: Gets the record for a given short link
       tags:
         - link
     put:
@@ -105,7 +105,7 @@ paths:
       security:
         - bearerAuth: [ ]
         - basicAuth: [ ]
-      summary: Create a short link by specifying the id and target.
+      summary: Create a short link with specific id
       tags:
         - link
     delete:

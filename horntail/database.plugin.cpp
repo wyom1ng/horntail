@@ -31,7 +31,8 @@ void Database::initAndStart(const Json::Value &database_config) {
 
 void Database::shutdown() {
   deletion_thread.request_stop();
-  deletion_thread.join();
+  if (deletion_thread.joinable())
+    deletion_thread.join();
 }
 
 void Database::deletion_routine(const std::stop_token &stop_token, std::chrono::seconds interval) {

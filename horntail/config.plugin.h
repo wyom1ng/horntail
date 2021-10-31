@@ -16,8 +16,7 @@ class Config : public drogon::Plugin<Config> {
     std::string link_alphabet;
     std::string base_url;
     std::string not_found_redirect_url;
-    std::vector<basic_auth> basic_auth_credentials;
-    std::vector<std::string> bearer_token_credentials;
+    std::vector<std::string> credentials;
   } config;
 
  public:

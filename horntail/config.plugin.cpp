@@ -26,19 +26,8 @@ void Config::initAndStart(const Json::Value &) {
 
   if (custom_config["credentials"].isArray()) {
     for (const auto &credential : custom_config["credentials"]) {
-      if (!credential["type"].isString()) continue;
-      auto type = credential["type"].asString();
-      if (type == "basic-auth" && credential["username"].isString() && credential["password"].isString()) {
-        basic_auth auth = {};
-        auth.username = credential["username"].asString();
-        auth.password = credential["password"].asString();
-
-        config.basic_auth_credentials.push_back(auth);
-      }
-
-      if (type == "bearer" && credential["token"].isString()) {
-        config.bearer_token_credentials.push_back(credential["token"].asString());
-      }
+      if (!credential.isString()) continue;
+      config.credentials.push_back(credential.asString());
     }
   }
 }
