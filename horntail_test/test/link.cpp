@@ -385,23 +385,21 @@ DROGON_TEST(create_link_rejects_invalid_payload) {
 
 DROGON_TEST(create_link_accepts_nonexistant_id) {
   Guard guard(TEST_CTX);
-  for (const auto &authorization : {guard.bearer_auth_valid, guard.basic_auth_valid}) {
-    std::string id = "some-id";
+  std::string id = "some-id";
 
-    auto req = drogon::HttpRequest::newHttpRequest();
-    req->setPath("/api/v1/link/" + id);
-    req->setMethod(drogon::Put);
-    req->addHeader("authorization", authorization);
-    nlohmann::json body;
-    body["target"] = "url";
+  auto req = drogon::HttpRequest::newHttpRequest();
+  req->setPath("/api/v1/link/" + id);
+  req->setMethod(drogon::Put);
+  req->addHeader("authorization", guard.bearer_auth_valid);
+  nlohmann::json body;
+  body["target"] = "url";
 
-    req->setBody(body.dump());
-    req->setContentTypeCode(drogon::CT_APPLICATION_JSON);
+  req->setBody(body.dump());
+  req->setContentTypeCode(drogon::CT_APPLICATION_JSON);
 
-    const auto &[result, response] = guard.http->sendRequest(req, 1);
-    REQUIRE(result == drogon::ReqResult::Ok);
-    CHECK(response->getStatusCode() == drogon::k201Created);
-  }
+  const auto &[result, response] = guard.http->sendRequest(req, 1);
+  REQUIRE(result == drogon::ReqResult::Ok);
+  CHECK(response->getStatusCode() == drogon::k201Created);
 }
 
 DROGON_TEST(create_link_accepts_id_marked_for_deletion) {
