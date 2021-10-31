@@ -19,7 +19,9 @@ drogon::Task<> Link::visit(drogon::HttpRequestPtr req, std::function<void(const 
 
   auto sql = drogon::app().getDbClient();
   try {
-    auto result = co_await sql->execSqlCoro("SELECT (`link`) FROM `links` WHERE `id` = ? AND (`delete_after` IS NULL OR `delete_after` > UTC_TIMESTAMP);", id);
+    auto result = co_await sql->execSqlCoro(
+        "SELECT (`link`) FROM `links` WHERE `id` = ? AND (`delete_after` IS NULL OR `delete_after` > UTC_TIMESTAMP);",
+        id);
 
     if (result.empty()) {
       auto config = drogon::app().getPlugin<Config>()->get();
@@ -232,7 +234,9 @@ drogon::Task<> Link::create(drogon::HttpRequestPtr req, std::function<void(const
   auto sql = drogon::app().getDbClient();
   try {
     auto result = co_await sql->execSqlCoro(
-        "SELECT COUNT(*) as `count` FROM `links` WHERE `id`= ? AND (`delete_after` IS NULL OR `delete_after` > UTC_TIMESTAMP);", id);
+        "SELECT COUNT(*) as `count` FROM `links` WHERE `id`= ? AND (`delete_after` IS NULL OR `delete_after` > "
+        "UTC_TIMESTAMP);",
+        id);
 
     bool id_exists = result[0]["count"].as<bool>();
 
@@ -298,10 +302,22 @@ drogon::Task<> Link::remove(drogon::HttpRequestPtr req, std::function<void(const
     co_return;
   }
 
-  auto response = drogon::HttpResponse::newHttpResponse();
-  response->setStatusCode(drogon::k501NotImplemented);
-  callback(response);
-  co_return;
+  auto sql = drogon::app().getDbClient();
+  try {
+    co_await sql->execSqlCoro("DELETE FROM `links` WHERE `id`= ?;", id);
+
+    auto response = drogon::HttpResponse::newHttpResponse();
+    response->setStatusCode(drogon::k204NoContent);
+    callback(response);
+    co_return;
+  } catch (const drogon::orm::DrogonDbException &e) {
+    Json::Value response_json;
+    response_json["message"] = e.base().what();
+    auto response = drogon::HttpResponse::newHttpJsonResponse(response_json);
+    response->setStatusCode(drogon::k500InternalServerError);
+    callback(response);
+    co_return;
+  }
 }
 
 };  // namespace controllers
