@@ -3,11 +3,11 @@
 //
 #include "guard.h"
 
+#include <date/date.h>
 #include <drogon/drogon.h>
 
 #include <chrono>
 
-#include "lib/date.h"
 #include "nlohmann/json.hpp"
 
 Guard::Guard(std::shared_ptr<drogon::test::Case> TEST_CTX) : TEST_CTX(TEST_CTX) {
@@ -30,11 +30,14 @@ bool Guard::validate_available_until(const std::string &timestamp, const std::ch
   auto parsed = parse_timestamp(timestamp);
   parsed -= lifetime;
 
-  return duration_cast<std::chrono::seconds>(test_start.time_since_epoch()) <= duration_cast<std::chrono::seconds>(parsed.time_since_epoch())
-      && duration_cast<std::chrono::seconds>(parsed.time_since_epoch()) <= duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch());
+  return duration_cast<std::chrono::seconds>(test_start.time_since_epoch()) <=
+             duration_cast<std::chrono::seconds>(parsed.time_since_epoch()) &&
+         duration_cast<std::chrono::seconds>(parsed.time_since_epoch()) <=
+             duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch());
 }
 
-std::string Guard::generate_id(const std::string &authorization, const std::string &target, std::optional<std::chrono::seconds> lifetime) {
+std::string Guard::generate_id(const std::string &authorization, const std::string &target,
+                               std::optional<std::chrono::seconds> lifetime) {
   auto req = drogon::HttpRequest::newHttpRequest();
   req->setPath("/api/v1/link");
   req->setMethod(drogon::Post);

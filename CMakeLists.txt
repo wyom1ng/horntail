@@ -69,3 +69,8 @@ target_include_directories(${PROJECT_NAME}_test PRIVATE third_party/nanoid_cpp/i
 target_link_libraries(${PROJECT_NAME}_test PRIVATE nanoid)
 
 ##############
+### date #####
+
+target_include_directories(${PROJECT_NAME}_test PRIVATE third_party/date/include)
+
+##############
