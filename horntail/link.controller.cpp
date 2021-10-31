@@ -19,7 +19,7 @@ drogon::Task<> Link::visit(drogon::HttpRequestPtr req, std::function<void(const 
 
   auto sql = drogon::app().getDbClient();
   try {
-    auto result = co_await sql->execSqlCoro("SELECT (`link`) FROM `links` WHERE `id` = ?;", id);
+    auto result = co_await sql->execSqlCoro("SELECT (`link`) FROM `links` WHERE `id` = ? AND (`delete_after` IS NULL OR `delete_after` > UTC_TIMESTAMP);", id);
 
     if (result.empty()) {
       auto config = drogon::app().getPlugin<Config>()->get();
@@ -106,7 +106,8 @@ drogon::Task<> Link::generate(drogon::HttpRequestPtr req,
     }
 
     auto result = co_await sql->execSqlCoro(
-        "SELECT `id`, DATE_FORMAT(`delete_after`, '%Y-%m-%dT%TZ') as `available_until`, CONCAT(?, `id`) as short_url "
+        "SELECT `id`, IF(`delete_after`, DATE_FORMAT(`delete_after`, '%Y-%m-%dT%TZ'), NULL) as `available_until`, "
+        "CONCAT(?, `id`) as `short_url` "
         "FROM `links` WHERE `id`= ?;",
         config.base_url, id);
 
@@ -121,9 +122,6 @@ drogon::Task<> Link::generate(drogon::HttpRequestPtr req,
     for (const auto &field : result[0]) {
       if (field.isNull()) continue;
       response_json[field.name()] = field.as<std::string>();
-    }
-    if (!lifetime_seconds) {
-      response_json.removeMember("available_until");
     }
 
     auto response = drogon::HttpResponse::newHttpJsonResponse(response_json);
@@ -142,10 +140,49 @@ drogon::Task<> Link::generate(drogon::HttpRequestPtr req,
 
 drogon::Task<> Link::get(drogon::HttpRequestPtr req, std::function<void(const drogon::HttpResponsePtr &)> callback,
                          const std::string &id) {
-  auto response = drogon::HttpResponse::newHttpResponse();
-  response->setStatusCode(drogon::k501NotImplemented);
-  callback(response);
-  co_return;
+  if (id.size() > 255) {
+    Json::Value response_json;
+    response_json["message"] = "[id] must be no more than 255 characters";
+    auto response = drogon::HttpResponse::newHttpJsonResponse(response_json);
+    response->setStatusCode(drogon::k400BadRequest);
+    callback(response);
+    co_return;
+  }
+
+  auto config = drogon::app().getPlugin<Config>()->get();
+  auto sql = drogon::app().getDbClient();
+  try {
+    auto result = co_await sql->execSqlCoro(
+        "SELECT `created_at`, IF(`delete_after`, DATE_FORMAT(`delete_after`, '%Y-%m-%dT%TZ'), NULL) as "
+        "`available_until`, CONCAT(?, `id`) as `short_url`, `link` as `target` "
+        "FROM `links` WHERE `id`= ? AND (`delete_after` IS NULL OR `delete_after` > UTC_TIMESTAMP);",
+        config.base_url, id);
+
+    if (result.empty()) {
+      auto response = drogon::HttpResponse::newHttpResponse();
+      response->setStatusCode(drogon::k404NotFound);
+      callback(response);
+      co_return;
+    }
+
+    Json::Value response_json;
+    for (const auto &field : result[0]) {
+      if (field.isNull()) continue;
+      response_json[field.name()] = field.as<std::string>();
+    }
+
+    auto response = drogon::HttpResponse::newHttpJsonResponse(response_json);
+    response->setStatusCode(drogon::k200OK);
+    callback(response);
+    co_return;
+  } catch (const drogon::orm::DrogonDbException &e) {
+    Json::Value response_json;
+    response_json["message"] = e.base().what();
+    auto response = drogon::HttpResponse::newHttpJsonResponse(response_json);
+    response->setStatusCode(drogon::k500InternalServerError);
+    callback(response);
+    co_return;
+  }
 }
 
 drogon::Task<> Link::create(drogon::HttpRequestPtr req, std::function<void(const drogon::HttpResponsePtr &)> callback,

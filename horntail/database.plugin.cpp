@@ -16,7 +16,7 @@ void Database::initAndStart(const Json::Value &database_config) {
         "`id` VARCHAR(256) NOT NULL,"
         "`link` TEXT NOT NULL,"
         "`created_at` TIMESTAMP DEFAULT UTC_TIMESTAMP,"
-        "`delete_after` TIMESTAMP,"
+        "`delete_after` TIMESTAMP NULL DEFAULT NULL,"
         "PRIMARY KEY (`id`)"
         ");");
   } catch (const drogon::orm::DrogonDbException &e) {

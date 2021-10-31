@@ -279,12 +279,12 @@ DROGON_TEST(get_link_accepts_valid_id) {
     REQUIRE(nlohmann::json::accept(response->body()));
     auto response_json = nlohmann::json::parse(response->body(), nullptr, false);
 
-    for (const auto &key : {"available_until", "id", "short_url", "target"}) {
+    for (const auto &key : {"available_until", "short_url", "target", "created_at"}) {
       REQUIRE(response_json[key].is_string());
     }
 
     CHECK(response_json["target"] == target);
-    CHECK(response_json["short_url"] == guard.base_url + response_json["id"].get<std::string>());
+    CHECK(response_json["short_url"] == guard.base_url + id);
     CHECK(guard.validate_available_until(response_json["available_until"]));
   }
 }
@@ -306,12 +306,12 @@ DROGON_TEST(get_link_accepts_indefinite_lifetime) {
     REQUIRE(nlohmann::json::accept(response->body()));
     auto response_json = nlohmann::json::parse(response->body(), nullptr, false);
 
-    for (const auto &key : {"available_until", "id", "short_url", "target"}) {
+    for (const auto &key : {"short_url", "target", "created_at"}) {
       REQUIRE(response_json[key].is_string());
     }
 
     CHECK(response_json["target"] == target);
-    CHECK(response_json["short_url"] == guard.base_url + response_json["id"].get<std::string>());
+    CHECK(response_json["short_url"] == guard.base_url + id);
     CHECK(!response_json.contains("available_until"));
   }
 }
