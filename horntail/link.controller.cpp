@@ -6,43 +6,52 @@
 
 namespace controllers {
 
-void Link::visit(const drogon::HttpRequestPtr &, std::function<void(const drogon::HttpResponsePtr &)> &&callback,
+drogon::Task<> Link::visit(drogon::HttpRequestPtr req,
+                            std::function<void(const drogon::HttpResponsePtr &)> callback,
                  const std::string &id) {
-  auto link_query_success_cb = [callback](const drogon::orm::Result &r) {
-    if (r.empty()) {
+  if (id.size() > 255) {
+    Json::Value response_json;
+    response_json["message"] = "[id] must be no more than 255 characters";
+    auto response = drogon::HttpResponse::newHttpJsonResponse(response_json);
+    response->setStatusCode(drogon::k400BadRequest);
+    callback(response);
+    co_return;
+  }
+
+  auto sql = drogon::app().getDbClient();
+  try {
+    auto result = co_await sql->execSqlCoro("SELECT (`link`) FROM `links` WHERE `id` = ?;", id);
+
+    if (result.empty()) {
       auto config = drogon::app().getPlugin<Config>()->get();
       if (config.not_found_redirect_url.empty()) {
         auto response = drogon::HttpResponse::newHttpResponse();
         response->setStatusCode(drogon::k404NotFound);
         callback(response);
-        return;
+        co_return;
       }
 
       auto response = drogon::HttpResponse::newHttpResponse();
       response->addHeader("Location", config.not_found_redirect_url);
       response->setStatusCode(drogon::k302Found);
       callback(response);
-      return;
+      co_return;
     }
 
-    std::string url = r[0]["link"].c_str();
+    std::string url = result[0]["link"].c_str();
 
     auto response = drogon::HttpResponse::newHttpResponse();
     response->addHeader("Location", url);
     response->setStatusCode(drogon::k302Found);
     callback(response);
-  };
-  auto link_query_error_cb = [callback](const drogon::orm::DrogonDbException &e) {
+  } catch (const drogon::orm::DrogonDbException &e) {
     Json::Value response_json;
     response_json["message"] = e.base().what();
     auto response = drogon::HttpResponse::newHttpJsonResponse(response_json);
     response->setStatusCode(drogon::k500InternalServerError);
     callback(response);
-  };
-
-  auto db = drogon::app().getDbClient();
-  db->execSqlAsync("SELECT (`link`) FROM `links` WHERE `id` = ?;", std::move(link_query_success_cb),
-                   std::move(link_query_error_cb), id);
+    co_return;
+  }
 }
 
 drogon::Task<> Link::generate(drogon::HttpRequestPtr req, std::function<void(const drogon::HttpResponsePtr&)> callback) {
@@ -71,6 +80,14 @@ drogon::Task<> Link::generate(drogon::HttpRequestPtr req, std::function<void(con
   auto id = nanoid::generate(random, config.link_alphabet, config.link_id_length);
   auto url = json["target"].asString();
 
+  if (!(!json.isMember("lifetime_seconds") || json["lifetime_seconds"].isNull() || json["lifetime_seconds"].isNumeric())) {
+    Json::Value response_json;
+    response_json["message"] = "[lifetime_seconds] must be a uint64_t";
+    auto response = drogon::HttpResponse::newHttpJsonResponse(response_json);
+    response->setStatusCode(drogon::k400BadRequest);
+    callback(response);
+    co_return;
+  }
   uint64_t lifetime_seconds = json.get("lifetime_seconds", config.default_link_lifetime_seconds).asUInt64();
 
   auto sql = drogon::app().getDbClient();
@@ -102,6 +119,9 @@ drogon::Task<> Link::generate(drogon::HttpRequestPtr req, std::function<void(con
     for (const auto &field : result[0]) {
       if (field.isNull()) continue;
       response_json[field.name()] = field.as<std::string>();
+    }
+    if (!lifetime_seconds) {
+      response_json.removeMember("available_until");
     }
 
     auto response = drogon::HttpResponse::newHttpJsonResponse(response_json);

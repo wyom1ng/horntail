@@ -23,7 +23,8 @@ class Link : public drogon::HttpController<Link> {
 
   METHOD_LIST_END
 
-  void visit(const drogon::HttpRequestPtr &req, std::function<void(const drogon::HttpResponsePtr &)> &&callback,
+  static drogon::Task<> visit(drogon::HttpRequestPtr req,
+                              std::function<void(const drogon::HttpResponsePtr &)> callback,
              const std::string &id);
 
   static drogon::Task<> generate(drogon::HttpRequestPtr req,
