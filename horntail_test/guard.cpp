@@ -8,6 +8,7 @@
 #include <chrono>
 
 #include "lib/date.h"
+#include "nlohmann/json.hpp"
 
 Guard::Guard(std::shared_ptr<drogon::test::Case> TEST_CTX) : TEST_CTX(TEST_CTX) {
   auto result = drogon::app().getDbClient()->execSqlSync("SELECT * FROM `links`;");
@@ -31,4 +32,28 @@ bool Guard::validate_available_until(const std::string &timestamp, const std::ch
 
   return duration_cast<std::chrono::seconds>(test_start.time_since_epoch()) <= duration_cast<std::chrono::seconds>(parsed.time_since_epoch())
       && duration_cast<std::chrono::seconds>(parsed.time_since_epoch()) <= duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch());
+}
+
+std::string Guard::generate_id(const std::string &authorization, const std::string &target, std::optional<std::chrono::seconds> lifetime) {
+  auto req = drogon::HttpRequest::newHttpRequest();
+  req->setPath("/api/v1/link");
+  req->setMethod(drogon::Post);
+  req->addHeader("authorization", authorization);
+  nlohmann::json body;
+  body["target"] = target;
+
+  if (lifetime.has_value()) {
+    body["lifetime_seconds"] = lifetime.value().count();
+  }
+
+  req->setBody(body.dump());
+  req->setContentTypeCode(drogon::CT_APPLICATION_JSON);
+
+  const auto &[result, response] = http->sendRequest(req, 1);
+  MANDATE(result == drogon::ReqResult::Ok);
+  MANDATE(response->getStatusCode() == drogon::k200OK);
+  MANDATE(nlohmann::json::accept(response->body()));
+
+  auto response_json = nlohmann::json::parse(response->body(), nullptr, false);
+  return response_json["id"];
 }

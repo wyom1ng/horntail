@@ -6,9 +6,8 @@
 
 namespace controllers {
 
-drogon::Task<> Link::visit(drogon::HttpRequestPtr req,
-                            std::function<void(const drogon::HttpResponsePtr &)> callback,
-                 const std::string &id) {
+drogon::Task<> Link::visit(drogon::HttpRequestPtr req, std::function<void(const drogon::HttpResponsePtr &)> callback,
+                           const std::string &id) {
   if (id.size() > 255) {
     Json::Value response_json;
     response_json["message"] = "[id] must be no more than 255 characters";
@@ -54,7 +53,8 @@ drogon::Task<> Link::visit(drogon::HttpRequestPtr req,
   }
 }
 
-drogon::Task<> Link::generate(drogon::HttpRequestPtr req, std::function<void(const drogon::HttpResponsePtr&)> callback) {
+drogon::Task<> Link::generate(drogon::HttpRequestPtr req,
+                              std::function<void(const drogon::HttpResponsePtr &)> callback) {
   if (!req->getJsonObject()) {
     Json::Value response_json;
     response_json["message"] = "invalid json";
@@ -80,7 +80,8 @@ drogon::Task<> Link::generate(drogon::HttpRequestPtr req, std::function<void(con
   auto id = nanoid::generate(random, config.link_alphabet, config.link_id_length);
   auto url = json["target"].asString();
 
-  if (!(!json.isMember("lifetime_seconds") || json["lifetime_seconds"].isNull() || json["lifetime_seconds"].isNumeric())) {
+  if (!(!json.isMember("lifetime_seconds") || json["lifetime_seconds"].isNull() ||
+        json["lifetime_seconds"].isUInt64())) {
     Json::Value response_json;
     response_json["message"] = "[lifetime_seconds] must be a uint64_t";
     auto response = drogon::HttpResponse::newHttpJsonResponse(response_json);
@@ -105,7 +106,8 @@ drogon::Task<> Link::generate(drogon::HttpRequestPtr req, std::function<void(con
     }
 
     auto result = co_await sql->execSqlCoro(
-        "SELECT `id`, DATE_FORMAT(`delete_after`, '%Y-%m-%dT%TZ') as `available_until`, CONCAT(?, `id`) as short_url FROM `links` WHERE `id`= ?;",
+        "SELECT `id`, DATE_FORMAT(`delete_after`, '%Y-%m-%dT%TZ') as `available_until`, CONCAT(?, `id`) as short_url "
+        "FROM `links` WHERE `id`= ?;",
         config.base_url, id);
 
     if (result.empty()) {
@@ -138,22 +140,28 @@ drogon::Task<> Link::generate(drogon::HttpRequestPtr req, std::function<void(con
   }
 }
 
-void Link::create(const drogon::HttpRequestPtr &req, std::function<void(const drogon::HttpResponsePtr &)> &&callback) {
+drogon::Task<> Link::get(drogon::HttpRequestPtr req, std::function<void(const drogon::HttpResponsePtr &)> callback,
+                         const std::string &id) {
   auto response = drogon::HttpResponse::newHttpResponse();
   response->setStatusCode(drogon::k501NotImplemented);
   callback(response);
+  co_return;
 }
 
-void Link::get(const drogon::HttpRequestPtr &req, std::function<void(const drogon::HttpResponsePtr &)> &&callback) {
+drogon::Task<> Link::create(drogon::HttpRequestPtr req, std::function<void(const drogon::HttpResponsePtr &)> callback,
+                            const std::string &id) {
   auto response = drogon::HttpResponse::newHttpResponse();
   response->setStatusCode(drogon::k501NotImplemented);
   callback(response);
+  co_return;
 }
 
-void Link::remove(const drogon::HttpRequestPtr &req, std::function<void(const drogon::HttpResponsePtr &)> &&callback) {
+drogon::Task<> Link::remove(drogon::HttpRequestPtr req, std::function<void(const drogon::HttpResponsePtr &)> callback,
+                            const std::string &id) {
   auto response = drogon::HttpResponse::newHttpResponse();
   response->setStatusCode(drogon::k501NotImplemented);
   callback(response);
+  co_return;
 }
 
 };  // namespace controllers

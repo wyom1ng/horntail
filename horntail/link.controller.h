@@ -17,21 +17,23 @@ class Link : public drogon::HttpController<Link> {
   ADD_METHOD_TO(Link::visit, "/{id}", drogon::Get);
 
   ADD_METHOD_TO(Link::generate, "/api/v1/link", drogon::Post, "Credential");
-  ADD_METHOD_TO(Link::get, "/api/v1/link", drogon::Get, "Credential");
-  ADD_METHOD_TO(Link::create, "/api/v1/link", drogon::Put, "Credential");
-  ADD_METHOD_TO(Link::remove, "/api/v1/link", drogon::Delete, "Credential");
+  ADD_METHOD_TO(Link::get, "/api/v1/link/{id}", drogon::Get, "Credential");
+  ADD_METHOD_TO(Link::create, "/api/v1/link/{id}", drogon::Put, "Credential");
+  ADD_METHOD_TO(Link::remove, "/api/v1/link/{id}", drogon::Delete, "Credential");
 
   METHOD_LIST_END
 
-  static drogon::Task<> visit(drogon::HttpRequestPtr req,
-                              std::function<void(const drogon::HttpResponsePtr &)> callback,
-             const std::string &id);
+  static drogon::Task<> visit(drogon::HttpRequestPtr req, std::function<void(const drogon::HttpResponsePtr &)> callback,
+                              const std::string &id);
 
   static drogon::Task<> generate(drogon::HttpRequestPtr req,
                                  std::function<void(const drogon::HttpResponsePtr &)> callback);
-  void get(const drogon::HttpRequestPtr &req, std::function<void(const drogon::HttpResponsePtr &)> &&callback);
-  void create(const drogon::HttpRequestPtr &req, std::function<void(const drogon::HttpResponsePtr &)> &&callback);
-  void remove(const drogon::HttpRequestPtr &req, std::function<void(const drogon::HttpResponsePtr &)> &&callback);
+  static drogon::Task<> get(drogon::HttpRequestPtr req, std::function<void(const drogon::HttpResponsePtr &)> callback,
+                            const std::string &id);
+  static drogon::Task<> create(drogon::HttpRequestPtr req,
+                               std::function<void(const drogon::HttpResponsePtr &)> callback, const std::string &id);
+  static drogon::Task<> remove(drogon::HttpRequestPtr req,
+                               std::function<void(const drogon::HttpResponsePtr &)> callback, const std::string &id);
 };
 
 }  // namespace controllers

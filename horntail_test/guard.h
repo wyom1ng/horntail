@@ -36,6 +36,8 @@ class Guard {
 
   std::chrono::time_point<std::chrono::high_resolution_clock> parse_timestamp(const std::string &timestamp);
   bool validate_available_until(const std::string &timestamp, const std::chrono::seconds &lifetime = default_lifetime);
+
+  std::string generate_id(const std::string &authorization, const std::string &target, std::optional<std::chrono::seconds>lifetime = std::nullopt);
 };
 
 #endif  // HORNTAIL_HORNTAIL_TEST_GUARD_H_
