@@ -13,15 +13,15 @@ void Credential::doFilter(const drogon::HttpRequestPtr& req, drogon::FilterCallb
   auto config = drogon::app().getPlugin<Config>()->get();
   auto authorization = req->getHeader("authorization");
 
+  if (std::find(config.credentials.begin(), config.credentials.end(), authorization) != config.credentials.end()) {
+    valid_cb();
+    return;
+  }
+
   if (authorization.empty()) {
     auto response = drogon::HttpResponse::newHttpResponse();
     response->setStatusCode(drogon::k401Unauthorized);
     invalid_cb(response);
-    return;
-  }
-
-  if (std::find(config.credentials.begin(), config.credentials.end(), authorization) != config.credentials.end()) {
-    valid_cb();
     return;
   }
 

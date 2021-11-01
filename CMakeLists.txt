@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.0)
 project(horntail)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -27,7 +27,8 @@ add_executable(${PROJECT_NAME}_test horntail_test/main.cpp ${SOURCES}
 
 ### drogon ###
 
-set(BUILD_EXAMPLES off)
+set(BUILD_EXAMPLES OFF)
+set(BUILD_CTL OFF)
 add_subdirectory(third_party/drogon)
 target_link_libraries(${PROJECT_NAME} PRIVATE drogon)
 
