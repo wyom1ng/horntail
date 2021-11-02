@@ -169,19 +169,23 @@ paths:
         - meta
 servers:
   - url: http://localhost:9000/
+  - url: https://wyoming.みんな/
 components:
   responses:
     GenerateLinkResponse:
+      description: "The generated short link"
       content:
         "application/json":
           schema:
             $ref: "#/components/schemas/GenerateLinkResponseSchema"
     GetLinkResponse:
+      description: "The short link record"
       content:
         "application/json":
           schema:
             $ref: "#/components/schemas/GetLinkResponseSchema"
     PutLinkResponse:
+      description: "The short link record"
       content:
         "application/json":
           schema:
@@ -217,7 +221,7 @@ components:
     LifetimeSeconds:
       type: integer
       description: How long until a link is deleted. Explicitly setting this to 0 disables deletion.
-      min: 0
+      minimum: 0
     Id:
       type: string
       maxLength: 255
